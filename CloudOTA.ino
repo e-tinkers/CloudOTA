@@ -13,12 +13,12 @@
 #include <WiFiClientSecure.h>
 #include "CloudOTA.h"
 
-const char *ssid = "DIDI1";
-const char *password = "blinkie291boo";
+const char *ssid = "ssid";
+const char *password = "password";
 
 void setup() {
 
-  pinMode(LED_BUILTIN, OUTPUT);
+//  pinMode(LED_BUILTIN, OUTPUT);
   
   Serial.begin(115200);
 
@@ -35,6 +35,6 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-  delay(1000);
+//  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+//  delay(1000);
 }
