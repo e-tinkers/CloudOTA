@@ -2,7 +2,7 @@
 
 #define CLOUD_OTA_H
 
-String currentFwVersion{"2.0.1"};
+String currentFwVersion{"2.0.0"};
 String latestFirmware{};
 
 String fwVersionURL = "https://raw.githubusercontent.com/e-tinkers/CloudOTA/master/fw_version.txt";
