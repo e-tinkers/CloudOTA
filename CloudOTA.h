@@ -5,8 +5,8 @@
 String currentFwVersion{"2.0.0"};
 String latestFirmware{};
 
-String fwVersionURL = "https://raw.githubusercontent.com/e-tinkers/AutoOTA/master/fw_version.txt";
-String fwBinaryURL = "https://raw.githubusercontent.com/e-tinkers/AutoOTA/master/firmware";
+String fwVersionURL = "https://raw.githubusercontent.com/e-tinkers/CloudOTA/master/fw_version.txt";
+String fwBinaryURL = "https://raw.githubusercontent.com/e-tinkers/CloudOTA/master/firmware";
 
 // This is the root CA for github
 // DigiCert Global CA (expired 10 Nov 2031 00:00:00 GMT)
