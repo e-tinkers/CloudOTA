@@ -1,6 +1,9 @@
 #ifndef CLOUD_OTA_H
-
 #define CLOUD_OTA_H
+
+#include <HTTPClient.h>
+#include <HTTPUpdate.h>
+#include <WiFiClientSecure.h>
 
 String currentFwVersion{"2.0.0"};
 String latestFirmware{};
@@ -68,7 +71,7 @@ bool newFirmwareAvailable(void) {
 
   Serial.printf("This firmware: v%s\n", currentFwVersion.c_str());
     
-  WiFiClientSecure client; // = new WiFiClientSecure();
+  WiFiClientSecure client;
   HTTPClient https;
   client.setInsecure();
   https.addHeader("Cache-Control", "no-cache");

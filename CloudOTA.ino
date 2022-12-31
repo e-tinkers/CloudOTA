@@ -8,9 +8,6 @@
 #endif
 
 #include <WiFi.h>
-#include <HTTPClient.h>
-#include <HTTPUpdate.h>
-#include <WiFiClientSecure.h>
 #include "CloudOTA.h"
 
 const char *ssid = "ssid";
