@@ -1,15 +1,17 @@
 #ifndef CLOUD_OTA_H
 #define CLOUD_OTA_H
 
-#include <HTTPClient.h>
-#include <HTTPUpdate.h>
 #include <WiFiClientSecure.h>
+#include <Update.h>
+//#include <HttpsOTAUpdate.h>
 
-String currentFwVersion{"2.0.0"};
+String currentFwVersion{"2.0.1"};
 String latestFirmware{};
 
-String fwVersionURL = "https://raw.githubusercontent.com/e-tinkers/CloudOTA/master/fw_version.txt";
-String fwBinaryURL = "https://raw.githubusercontent.com/e-tinkers/CloudOTA/master/firmware";
+String host = "raw.githubusercontent.com";
+const int hostPort = 443;
+String fwVersionURL = "/e-tinkers/CloudOTA/master/fw_version.txt";
+String fwBinaryURL = "/e-tinkers/CloudOTA/master/firmware";
 
 // This is the root CA for github
 // DigiCert Global CA (expired 10 Nov 2031 00:00:00 GMT)
@@ -37,57 +39,137 @@ const char * githubRootCA = \
 "CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=\n"
 "-----END CERTIFICATE-----\n";
 
-void updateFirmware(void) {
+String getHeaderValue(String header, String headerName) {
+  return header.substring(strlen(headerName.c_str()));
+}
 
-  httpUpdate.onStart([]() {
-    Serial.println("OTA download started");
-  });
+void updateFirmware(void) {
   
-  httpUpdate.onEnd([]() {
-    Serial.println("OTA download finished");
-  });
-  
-  httpUpdate.onProgress([](int cur, int total) {
-#ifdef LED_BUILTIN
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-#else
-    Serial.printf("Downloading %d of %d bytes...\n", cur, total);
-#endif
-  });
-  
-  httpUpdate.onError([](int err) {
-    Serial.printf("OTA download error %d\n", err);
-  });
+  long contentLength{0};
+  bool isValidContentType{false};
   
   WiFiClientSecure client;
   client.setInsecure();
-  httpUpdate.update(client, fwBinaryURL + latestFirmware + ".bin");
 
+  if (!client.connect(host.c_str(), hostPort)) {
+     Serial.println("Err: Connection failed");
+     return;
+  }
+    
+  String fileName = fwBinaryURL + latestFirmware + ".bin";
+  Serial.println("Fetching: firmware" + latestFirmware + ".bin...");
+  
+  client.println("GET " + fileName + " HTTP/1.1");
+  client.println("Host: " + host);
+  client.println("Cache-Control: no-cache");
+  client.println("Keep-Alive: timeout=15, max=1000");
+  client.println("Connection: Keep-Alive\r\n");
+
+  unsigned long timeout = millis();
+  while (client.available() == 0) {
+    if (millis() - timeout > 20000) {
+       Serial.println("Err: Client Timeout");
+       return;
+    }
+  }
+
+  // parse headers
+  while(client.available()) {
+    String line = client.readStringUntil('\n');
+
+    if (line.startsWith("HTTP/1.1")) {
+      if (line.indexOf("200") < 0) {
+        Serial.println("Err: request error: " + line);
+        break;
+      }
+    }
+
+    if (line.startsWith("Content-Length: ")) {
+      String clen = getHeaderValue(line, "Content-Length: ");
+      contentLength = clen.toInt();
+    }
+
+    if (line.startsWith("Content-Type: ")) {
+      String contentType = getHeaderValue(line, "Content-Type: ");
+      contentType.trim();
+      if (contentType.equals("application/octet-stream")) {
+        isValidContentType = true;
+      }
+    }
+   
+    if (line.startsWith("\r")) break;
+  }
+
+  if (contentLength && isValidContentType) {
+    bool canBegin = Update.begin(contentLength);
+    if (canBegin) {
+      
+      Serial.println("OTA started...");
+      long written = Update.writeStream(client);
+
+      if (Update.end()) {
+        Serial.println("OTA finished...");
+        Serial.printf("Written : %ld bytes...\n", written);
+        if (Update.isFinished()) {
+          Serial.println("Rebooting...");
+          ESP.restart();
+        }
+      } else {
+        Serial.printf("Err: %d\n", Update.getError());
+      }
+    } else {
+      Serial.printf("Err: Not enough memory, requires %ld bytes", contentLength);
+    }
+  } 
+  
+  client.flush();
+  client.stop();
+  
 }
 
 bool newFirmwareAvailable(void) {
 
   bool newVersion{false};
 
-  Serial.printf("This firmware: v%s\n", currentFwVersion.c_str());
-    
+  Serial.println("This firmware: " + currentFwVersion);
+
   WiFiClientSecure client;
-  HTTPClient https;
   client.setInsecure();
-  https.addHeader("Cache-Control", "no-cache");
-  if (https.begin(client, fwVersionURL + "?" + currentFwVersion)) {
-    int httpCode = https.GET();
-    if (httpCode == HTTP_CODE_OK) {
-      latestFirmware = https.getString(); // get version from server
-      latestFirmware.trim();
-      Serial.printf("Latest firmware: %s\n", latestFirmware.c_str());
-      if (!latestFirmware.equals(currentFwVersion))
-        newVersion = true;
-    } else {
-      Serial.printf("\nError: %d\n", httpCode);
-    }
-    https.end();
+  if (!client.connect(host.c_str(), hostPort)) {
+     Serial.println("Err: Connection failed");
+     return false;
   }
+
+  client.println("GET " + fwVersionURL + " HTTP/1.1");
+  client.println("Host: " + host);
+  client.println("Cache-Control: no-cache");
+  client.println("Connection: close\r\n");
+  
+  unsigned long timeout = millis();
+  while (client.available() == 0) {
+    if (millis() - timeout > 10000) {
+       Serial.println("Err: Client Timeout");
+       return false;
+    }
+  }
+
+  // skipt header
+  while(client.available()) {
+    String line = client.readStringUntil('\n');
+    if (line.startsWith("\r")) break;
+  }
+
+  if (client.available()) {
+    latestFirmware = client.readStringUntil('\n');
+    latestFirmware.trim();
+    Serial.println("Latest firmware: " + latestFirmware);
+    if (!latestFirmware.equals(currentFwVersion)) {
+      newVersion = true;
+    }
+  }
+  client.flush();
+  client.stop();
+
   return newVersion;
   
 }

@@ -3,12 +3,12 @@
 // two values are not equal, it will then download the firmware.bin from the server. 
 // This code is based on ESP32.
 
-#ifndef LED_BUILTIN
-#define LED_BUILTIN 2
-#endif
-
 #include <WiFi.h>
 #include "CloudOTA.h"
+
+//#ifndef LED_BUILTIN
+//#define LED_BUILTIN 2
+//#endif
 
 const char *ssid = "ssid";
 const char *password = "password";
