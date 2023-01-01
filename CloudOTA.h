@@ -5,7 +5,7 @@
 #include <Update.h>
 //#include <HttpsOTAUpdate.h>
 
-String currentFwVersion{"2.0.1"};
+String currentFwVersion{"2.0.0"};
 String latestFirmware{};
 
 String host = "raw.githubusercontent.com";
