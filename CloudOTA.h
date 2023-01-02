@@ -3,10 +3,11 @@
 
 #include <WiFiClientSecure.h>
 #include <Update.h>
-//#include <HttpsOTAUpdate.h>
+
 
 String currentFwVersion{"2.0.0"};
 String latestFirmware{};
+const int HTTP_TIMEOUT{20000};
 
 String host = "raw.githubusercontent.com";
 const int hostPort = 443;
@@ -67,10 +68,11 @@ void updateFirmware(void) {
 
   unsigned long timeout = millis();
   while (client.available() == 0) {
-    if (millis() - timeout > 20000) {
+    if (millis() - timeout > HTTTP_TIMEOUT) {
        Serial.println("Err: Client Timeout");
        return;
     }
+    delay(1);
   }
 
   // parse headers
@@ -147,10 +149,11 @@ bool newFirmwareAvailable(void) {
   
   unsigned long timeout = millis();
   while (client.available() == 0) {
-    if (millis() - timeout > 10000) {
+    if (millis() - timeout > HTTP_TIMEOUT) {
        Serial.println("Err: Client Timeout");
        return false;
     }
+    delay(1);
   }
 
   // skipt header
