@@ -68,7 +68,7 @@ void updateFirmware(void) {
 
   unsigned long timeout = millis();
   while (client.available() == 0) {
-    if (millis() - timeout > HTTTP_TIMEOUT) {
+    if (millis() - timeout > HTTP_TIMEOUT) {
        Serial.println("Err: Client Timeout");
        return;
     }
