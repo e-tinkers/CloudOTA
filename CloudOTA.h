@@ -4,15 +4,16 @@
 #include <WiFiClientSecure.h>
 #include <Update.h>
 
-
+// ------ Change the following paramters according to your server //
 String currentFwVersion{"2.0.0"};
-String latestFirmware{};
-const int HTTP_TIMEOUT{20000};
-
 String host = "raw.githubusercontent.com";
 const int hostPort = 443;
 String fwVersionURL = "/e-tinkers/CloudOTA/master/fw_version.txt";
 String fwBinaryURL = "/e-tinkers/CloudOTA/master/firmware";
+// -------------------------------------------------------------- //
+
+String latestFirmware{};
+const int HTTP_TIMEOUT{20000};
 
 // This is the root CA for github
 // DigiCert Global CA (expired 10 Nov 2031 00:00:00 GMT)
@@ -68,7 +69,7 @@ void updateFirmware(void) {
 
   unsigned long timeout = millis();
   while (client.available() == 0) {
-    if (millis() - timeout > HTTP_TIMEOUT) {
+    if (millis() - timeout > HTTTP_TIMEOUT) {
        Serial.println("Err: Client Timeout");
        return;
     }
