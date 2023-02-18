@@ -12,9 +12,6 @@ String fwVersionURL = "/e-tinkers/CloudOTA/master/fw_version.txt";
 String fwBinaryURL = "/e-tinkers/CloudOTA/master/firmware";
 // -------------------------------------------------------------- //
 
-String latestFirmware{};
-const int HTTP_TIMEOUT{20000};
-
 // This is the root CA for github
 // DigiCert Global CA (expired 10 Nov 2031 00:00:00 GMT)
 const char * githubRootCA = \
@@ -40,6 +37,10 @@ const char * githubRootCA = \
 "YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk\n"
 "CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=\n"
 "-----END CERTIFICATE-----\n";
+
+String latestFirmware{};
+const int HTTP_TIMEOUT{20000};
+
 
 String getHeaderValue(String header, String headerName) {
   return header.substring(strlen(headerName.c_str()));

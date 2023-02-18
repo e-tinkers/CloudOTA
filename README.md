@@ -2,13 +2,14 @@
 
 > CloudOTA currently only targets ESP32. It could be extended to work with ESP8266 with some modification.
 
-CloudOTA.h consists of two functions used for OTA update via a cloud server (e.g. via github repository or any VPS). The CloudOTA.ino provides a simple demonstration and the boiler plate code on how to use the CloudOTA.
+CloudOTA abtracts away all the boiler plate code into the `CloudOTA.h` library, and user only need to add a few line of codes, usually before the end of `setup()` function, and with some configuration setting in the `CloudOTA.h`.
+
+The `CloudOTA.h` consists of two functions used for OTA update via a cloud server (e.g. via github repository or any VPS). The `CloudOTA.ino` provides a simple demonstration and the boiler plate code on how to use the CloudOTA.
 
 CloudOTA is based on ESP32 [Update](https://github.com/espressif/arduino-esp32/tree/master/libraries/Update) Library, it allows user to upload the firmware binary file and specific what is the latest firmware firmware version in a `fw_version.txt` file. This allows IoT devices deployed out in the field to make a request to a github repository(or any VPS) to check the latest firmware when the IoT device come in life from deep sleep or on a reset cycle.
 
-CloudOTA abtracts away all the boiler plate code into the `CloudOTA.h` library, and user only need to add a few line of codes, usually before the end of `setup()` function, and with some configuration setting in the `CloudOTA.h`.
-
 ## When should I use CloudOTA
+
 ESP32-Arduino Core provides a great library [ArduinoOTA](https://github.com/espressif/arduino-esp32/tree/master/libraries/ArduinoOTA) for providing an easy-to-user OTA functionality for devices that are constantly on and within a local network. However, it is not really suitable for ESP32 IoT devices deployed in the field that remain deepsleep and only wake-up a few times a day. Those devices need to be able to check the latest firmware version via a public-facing server and conduct an OTA for self-update. CloudOTA does not replace ArduinoOTA, the two serve different purpose.
 
 ## How to use it
